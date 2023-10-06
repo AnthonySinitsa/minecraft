@@ -2,6 +2,8 @@
 #include <GL/glew.h>
 #include <iostream>
 #include <glm/glm.hpp>  // Include GLM after GLEW
+#include <glm/gtc/matrix_transform.hpp>  // Include transformations
+#include <glm/gtc/type_ptr.hpp>
 #include "shader_util.h"
 
 // Vertex data for the cube
@@ -82,22 +84,35 @@ int main(int argc, char* argv[]) {
     // Enable depth test
     glEnable(GL_DEPTH_TEST);
 
-    // Here setup VAO, VBO, and shaders
     GLuint VBO, VAO;
     glGenVertexArrays(1, &VAO);
     glGenBuffers(1, &VBO);
 
     glBindVertexArray(VAO);
-
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
 
-    // Load and compile shaders
+    // Set up transformation matrices
+    glm::mat4 model = glm::mat4(1.0f);
+    glm::mat4 view = glm::lookAt(
+        glm::vec3(0.0f, 0.0f, 3.0f),
+        glm::vec3(0.0f, 0.0f, 0.0f),
+        glm::vec3(0.0f, 1.0f, 0.0f)
+    );
+    glm::mat4 projection = glm::perspective(glm::radians(45.0f), 800.0f / 600.0f, 0.1f, 100.0f);
+
     GLuint shaderProgram = loadShaders("../shaders/vertexShader.glsl", "../shaders/fragmentShader.glsl");
     glUseProgram(shaderProgram);
+
+    GLint modelLoc = glGetUniformLocation(shaderProgram, "model");
+    GLint viewLoc = glGetUniformLocation(shaderProgram, "view");
+    GLint projLoc = glGetUniformLocation(shaderProgram, "projection");
+
+    glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
+    glUniformMatrix4fv(projLoc, 1, GL_FALSE, glm::value_ptr(projection));
 
     bool quit = false;
     SDL_Event event;
@@ -108,15 +123,18 @@ int main(int argc, char* argv[]) {
             }
         }
 
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);  // Also clear the depth buffer
+        // Rotate the model matrix
+        model = glm::rotate(glm::mat4(1.0f), (float)SDL_GetTicks() / 1000.0f, glm::vec3(0.5f, 1.0f, 0.0f));
+        glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
+
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         glBindVertexArray(VAO);
-        glDrawArrays(GL_TRIANGLES, 0, 36);  // Drawing the cube using the VAO
+        glDrawArrays(GL_TRIANGLES, 0, 36);
 
-        SDL_GL_SwapWindow(window);  // Swap the window buffers
+        SDL_GL_SwapWindow(window);
     }
 
-    // Cleanup
     glDeleteVertexArrays(1, &VAO);
     glDeleteBuffers(1, &VBO);
 
