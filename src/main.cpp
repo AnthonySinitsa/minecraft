@@ -2,6 +2,7 @@
 #include <GL/glew.h>
 #include <iostream>
 #include <glm/glm.hpp>  // Include GLM after GLEW
+#include "shader_util.h"
 
 int main(int argc, char* argv[]) {
     // Initialize SDL
