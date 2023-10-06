@@ -15,8 +15,8 @@ add_executable(minecraft ${SOURCE_FILES})
 find_package(SDL2 REQUIRED)
 find_package(GLEW REQUIRED)
 
-# Include directories for SDL2 and GLEW
-include_directories(${SDL2_INCLUDE_DIRS} ${GLEW_INCLUDE_DIRS})
+# Include directories for SDL2, GLEW, and your include/ folder
+include_directories(${SDL2_INCLUDE_DIRS} ${GLEW_INCLUDE_DIRS} include)
 
 # Link SDL2, GLEW, and OpenGL libraries
 target_link_libraries(minecraft ${SDL2_LIBRARIES} ${GLEW_LIBRARIES} GL)
